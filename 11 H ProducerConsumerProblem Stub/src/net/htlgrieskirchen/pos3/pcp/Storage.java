@@ -16,38 +16,38 @@ public class Storage {
     private int overflowCounter;
     private boolean productionComplete;
 
-    public Storage(ArrayBlockingQueue<Integer> queue, int fetchedCounter, int storedCounter, int underflowCounter, int overflowCounter, boolean productionComplete) {
-        this.queue = queue;
-        this.fetchedCounter = fetchedCounter;
-        this.storedCounter = storedCounter;
-        this.underflowCounter = underflowCounter;
-        this.overflowCounter = overflowCounter;
-        this.productionComplete = productionComplete;
+    public Storage()
+    {
+        queue = new ArrayBlockingQueue<>(10);
     }
 
-    public Storage() {
-    }
-
-    
-    public synchronized boolean put(Integer data) throws InterruptedException {
+    public boolean put(Integer data) throws InterruptedException {
         boolean b = true;
-        queue.add(data);
-        storedCounter++;
-        for (int i = 0; i <= 10; i++) {
-           if(i <= 10)
-           {
-                overflowCounter++;
-                b=false;
-           }
+        if(queue.remainingCapacity() == 0)
+        {
+            overflowCounter++;
+            productionComplete = false;
+        }
+        else
+        {
+            queue.put(data);
+            storedCounter++;
         }
         return b;
-        
     }
  
-    public synchronized Integer get() {
-        int ret = queue.poll();
-        fetchedCounter++;
-        return fetchedCounter;
+    public Integer get() {
+        if(queue.isEmpty())
+        {
+            underflowCounter++;
+            return null;
+        }
+        else
+        {
+            queue.poll();
+            fetchedCounter++;
+            return fetchedCounter;
+        }
     }
 
     public boolean isProductionComplete() {

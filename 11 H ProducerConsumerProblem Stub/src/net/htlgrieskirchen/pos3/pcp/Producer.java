@@ -5,6 +5,7 @@
  */
 package net.htlgrieskirchen.pos3.pcp;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,24 +23,23 @@ public class Producer implements Runnable {
         this.storage = storage;
         this.sleepTime = sleepTime;
         this.numberOfItems = numberOfItems;
+        sent = new ArrayList<>();
     }
     
     
  
     @Override
     public void run() {
-        Storage s = new Storage();
         for (int i = 0; i < numberOfItems; i++) {
             try {
-                while(s.put(i)==true)
+                if(storage.put(i))
                 {
-                    sent.add(numberOfItems);
-                    if(s.put(i)==false)
-                    {
-                        s.wait(10000);
-                    }
+                    sent.add(i);
                 }
-                
+                else
+                {
+                    Thread.sleep(sleepTime);
+                }
             } catch (InterruptedException ex) {
                 Logger.getLogger(Producer.class.getName()).log(Level.SEVERE, null, ex);
             }
